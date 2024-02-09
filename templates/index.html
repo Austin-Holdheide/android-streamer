@@ -1,0 +1,36 @@
+<!-- templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Emulator Stream</title>
+</head>
+<body>
+    <h1>Android Emulator Stream</h1>
+
+    <div id="output"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.min.js"></script>
+    <script>
+        const socket = io.connect('http://localhost:5000');
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('emulator_output', (data) => {
+            document.getElementById('output').innerText += data.output + '\n';
+        });
+
+        socket.on('emulator_status', (data) => {
+            console.log('Emulator Status:', data.status);
+        });
+    </script>
+</body>
+</html>
