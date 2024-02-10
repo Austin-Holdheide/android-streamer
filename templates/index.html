@@ -1,36 +1,61 @@
-<!-- templates/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Android Emulator Stream</title>
+    <title>Application Monitor</title>
 </head>
 <body>
-    <h1>Android Emulator Stream</h1>
 
-    <div id="output"></div>
+<div>
+    <h1>Application Monitor</h1>
+    
+    {% if client_id %}
+        <p>Your Client ID: {{ client_id }}</p>
+    {% endif %}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.min.js"></script>
-    <script>
-        const socket = io.connect('http://localhost:5000');
+    <!-- Add a container for each connected user -->
+    {% for client_id, port in user_sessions.items() %}
+        <div id="{{ client_id }}-output-container">
+            <h2>Application Output for {{ client_id }}</h2>
+            <pre id="{{ client_id }}-application-output"></pre>
+        </div>
+    {% endfor %}
 
-        socket.on('connect', () => {
-            console.log('Connected to server');
-        });
+    <p id="emulator-status"></p>
 
-        socket.on('disconnect', () => {
-            console.log('Disconnected from server');
-        });
+    <div>
+        <h2>Player Status:</h2>
+        <p>Connected Users: <span id="connected-users">0</span></p>
+        <p>Player Limit: <span id="player-limit">5</span></p>
+    </div>
+</div>
 
-        socket.on('emulator_output', (data) => {
-            document.getElementById('output').innerText += data.output + '\n';
-        });
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
 
-        socket.on('emulator_status', (data) => {
-            console.log('Emulator Status:', data.status);
-        });
-    </script>
+    // SocketIO event handlers
+    socket.on('application_output', function(data) {
+        // Update the specific output container for the client
+        var outputContainer = document.getElementById(data.client_id + '-application-output');
+        outputContainer.innerText += data.output + '\n';
+    });
+
+    socket.on('emulator_status', function(data) {
+        document.getElementById('emulator-status').innerText = data.status;
+    });
+
+    socket.on('player_status', function(data) {
+        document.getElementById('connected-users').innerText = data.connected_users;
+        document.getElementById('player-limit').innerText = data.player_limit;
+    });
+
+    socket.on('player_limit_reached', function(data) {
+        alert(data.message);
+        window.location.href = '/';  // Redirect to the home page
+    });
+</script>
+
 </body>
 </html>
