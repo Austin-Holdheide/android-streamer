@@ -1,0 +1,8 @@
+# ignore ALL .log files
+*.log
+active_containers.json
+
+# ignore ALL files in ANY directory named temp
+temp/
+apk/
+Nox/
